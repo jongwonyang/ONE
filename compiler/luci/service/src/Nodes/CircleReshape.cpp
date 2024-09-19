@@ -144,8 +144,14 @@ loco::TensorShape Algorithm::visit(const luci::CircleReshape *node)
   uint32_t input_element_count = 1;
   uint32_t output_element_count = 1;
   uint32_t unknown_dim_index = UINT32_MAX;
+  bool should_infer = true;
   for (uint32_t i = 0; i < input_shape.rank(); ++i)
-    input_element_count *= (input_shape.dim(i).known() ? input_shape.dim(i).value() : 1);
+  {
+    if (input_shape.dim(i).known())
+      input_element_count *= input_shape.dim(i).value();
+    else
+      should_infer = false;
+  }
   for (uint32_t dim_index = 0; dim_index < output_shape.rank(); ++dim_index)
   {
     const uint32_t dim_value = output_shape.dim(dim_index).value();
@@ -159,7 +165,7 @@ loco::TensorShape Algorithm::visit(const luci::CircleReshape *node)
       output_element_count *= dim_value;
     }
   }
-  if (unknown_dim_index != UINT32_MAX)
+  if (unknown_dim_index != UINT32_MAX && should_infer)
   {
     output_shape.dim(unknown_dim_index) = input_element_count / output_element_count;
   }
