@@ -69,8 +69,11 @@ namespace sinf
  * @note  CircleReshape always has two inputs: `tensor` and `shape`.
  *        The `shape` can be CircleConst, CircleOutputDummy, or CircleNode.
  *        - If the `shape` is CircleConst, the shape is inferred from the constant.
+ *        - If the `shape` is CircleOutputDummy, the shape is inferred from:
+ *          - the attribute if it exists.
+ *          - the node itself if the attribute does not exist.
  *        - Else, the shape is inferred from the node iteself.
- *        - TODO support CircleOutputDummy and CircleNode
+ *        - TODO support CircleNode
  */
 loco::TensorShape Algorithm::visit(const luci::CircleReshape *node)
 {
@@ -97,6 +100,29 @@ loco::TensorShape Algorithm::visit(const luci::CircleReshape *node)
         {
           shape_by_input.dim(axis).unset();
         }
+      }
+    }
+    else if (auto dummy_shape_node = dynamic_cast<luci::CircleOutputDummy *>(node->shape()))
+    {
+      if (node->newShape()->rank() > 0)
+      {
+        shape_by_input.rank(node->newShape()->rank());
+
+        for (uint32_t axis = 0; axis < shape_by_input.rank(); ++axis)
+        {
+          shape_by_input.dim(axis) = node->newShape()->dim(axis);
+          if (node->newShape()->dim(axis) < 0)
+          {
+            shape_by_input.dim(axis).unset();
+          }
+        }
+      }
+      else
+      {
+        // If the `shape` is CircleOutputDummy and the attribute does not exist,
+        // this status cannot be handled by this shape inference rule.
+        // TODO support no `shape` and no attribute case
+        shape_by_input = circle_shape(node);
       }
     }
     else
