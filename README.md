@@ -27,7 +27,7 @@
   - 기존 ONE은 Dynamic Input Shape에 대해 optimize시 잘못된 값으로 추론하는 문제가 있었습니다.
 - 본 프로젝트에서는 [Dynamic Shape에 대해 Shape Inference를 지원하도록 개선하는 이슈](https://github.com/Samsung/ONE/issues/13697)를 해결하는것을 목표로 합니다.
 
-## 주요 기여
+## 주요 기여 (팀)
 ### ✅ 동적 모양 추론
 다음 연산들이 Dynamic Shape에 대해 Shape Inference를 지원하도록 수정했습니다.
 
